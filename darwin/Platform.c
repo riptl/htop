@@ -316,15 +316,23 @@ static double Platform_setCPUAverageValues(Meter* mtr) {
    double sumNormal = 0.0;
    double sumKernel = 0.0;
    double sumPercent = 0.0;
+   double sumFrequency = 0.0;
+   unsigned int numCPUsWithFrequency = 0;
    for (unsigned int i = 1; i <= host->existingCPUs; i++) {
       sumPercent += Platform_setCPUValues(mtr, i);
       sumNice    += mtr->values[CPU_METER_NICE];
       sumNormal  += mtr->values[CPU_METER_NORMAL];
       sumKernel  += mtr->values[CPU_METER_KERNEL];
+
+      if (isNonnegative(mtr->values[CPU_METER_FREQUENCY])) {
+         sumFrequency += mtr->values[CPU_METER_FREQUENCY];
+         numCPUsWithFrequency++;
+      }
    }
    mtr->values[CPU_METER_NICE]   = sumNice   / activeCPUs;
    mtr->values[CPU_METER_NORMAL] = sumNormal / activeCPUs;
    mtr->values[CPU_METER_KERNEL] = sumKernel / activeCPUs;
+   mtr->values[CPU_METER_FREQUENCY] = numCPUsWithFrequency ? sumFrequency / numCPUsWithFrequency : NAN;
    return sumPercent / activeCPUs;
 }
 
@@ -362,7 +370,7 @@ double Platform_setCPUValues(Meter* mtr, unsigned int cpu) {
    /* Convert to percent and return */
    total = mtr->values[CPU_METER_NICE] + mtr->values[CPU_METER_NORMAL] + mtr->values[CPU_METER_KERNEL];
 
-   mtr->values[CPU_METER_FREQUENCY] = NAN;
+   mtr->values[CPU_METER_FREQUENCY] = dhost->cpuFrequency[cpu - 1];
    mtr->values[CPU_METER_TEMPERATURE] = NAN;
 
    return CLAMP(total, 0.0, 100.0);

@@ -227,6 +227,9 @@ if test "$my_htop_platform" = darwin; then
    AC_CHECK_MEMBERS([struct vm_statistics64.internal_page_count], [], [], [[#include <mach/mach_host.h>]])
 
    AC_CHECK_DECLS([kIOMainPortDefault], [], [], [[#include <IOKit/IOKitLib.h>]])
+
+   # Private library used to read the CPU performance state residencies
+   AC_CHECK_LIB([IOReport], [IOReportCreateSubscription])
 fi
 
 # ----------------------------------------------------------------------
